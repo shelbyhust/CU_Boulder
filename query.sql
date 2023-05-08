@@ -6,17 +6,13 @@ SELECT DISTINCT
             AND EXISTS (
                 SELECT 'x' FROM dirsvcs.dir_acad_career WHERE uuid = dp.uuid
             ) THEN 'Student'  
-        WHEN dp.primaryaffiliation = 'Faculty' THEN 
-            CASE
-                WHEN daf.edupersonaffiliation = 'Faculty' 
-                    AND daf.description = 'Student Faculty' THEN 'Student'
+        WHEN dp.primaryaffiliation = 'Faculty' AND daf.edupersonaffiliation = 'Faculty' 
+            CASE WHEN daf.description = 'Student Faculty' THEN 'Student'
                 ELSE 'Faculty/Staff' 
             END
         WHEN dp.primaryaffiliation = 'Staff' THEN 'Faculty/Staff' 
-        WHEN dp.primaryaffiliation = 'Employee' THEN
-            CASE
-                WHEN daf.edupersonaffiliation = 'Employee' 
-                    AND daf.description IN ('Student Employee', 'Student Faculty') THEN 'Student' 
+        WHEN dp.primaryaffiliation = 'Employee' AND daf.edupersonaffiliation = 'Employee' 
+            CASE WHEN daf.description IN ('Student Employee', 'Student Faculty') THEN 'Student' 
                 ELSE 'Faculty/Staff'
             END
         WHEN dp.primaryaffiliation = 'Officer/Professional' THEN 'Faculty/Staff'
