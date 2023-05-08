@@ -2,13 +2,16 @@ SELECT DISTINCT
     dp.dir_uid AS username,
     de.mail AS email,
     CASE 
-        WHEN dp.primaryaffiliation = 'Student' THEN 'Student'  
+        WHEN dp.primaryaffiliation = 'Student'
+            AND EXISTS (
+                SELECT 'x' FROM dirsvcs.dir_acad_career WHERE uuid = dp.uuid
+            ) THEN 'Student'  
         WHEN dp.primaryaffiliation = 'Faculty' THEN 
             CASE
                 WHEN daf.edupersonaffiliation = 'Faculty' 
                     AND daf.description = 'Student Faculty' THEN 'Student'
                 ELSE 'Faculty/Staff' 
-        END
+            END
         WHEN dp.primaryaffiliation = 'Staff' THEN 'Faculty/Staff' 
         WHEN dp.primaryaffiliation = 'Employee' THEN
             CASE
@@ -42,11 +45,6 @@ FROM dirsvcs.dir_person dp
 WHERE (
     dp.primaryaffiliation != 'Student'
         AND LOWER(de.mail) not like '%cu.edu'
-    ) OR (
-    dp.primaryaffiliation = 'Student'
-        AND EXISTS (
-            SELECT 'x' FROM dirsvcs.dir_acad_career WHERE uuid = dp.uuid
-        )
     )
     AND de.mail IS NOT NULL
     AND LOWER(de.mail) NOT LIKE '%cu.edu';
