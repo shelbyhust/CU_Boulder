@@ -1,57 +1,60 @@
---Original Script
-
-select distinct dp.dir_uid as username
-  ,de.mail as email
-  ,case  
-    when dp.primaryaffiliation = 'Student' then 'Student'  
-    when dp.primaryaffiliation = 'Faculty' then 
-      case when daf.edupersonaffiliation = 'Faculty' 
-        and daf.description = 'Student Faculty' then 'Student'
-      else 'Faculty/Staff' 
-      end
-    when dp.primaryaffiliation = 'Staff' then 'Faculty/Staff' 
-    when dp.primaryaffiliation = 'Employee' then 
-      case
-        when daf.edupersonaffiliation = 'Employee' 
-          and daf.description = 'Student Employee' then 'Student' 
-        when daf.edupersonaffiliation = 'Employee' 
-          and daf.description = 'Student Faculty' then 'Student'
-        else 'Faculty/Staff'
-      end
-    when dp.primaryaffiliation = 'Officer/Professional' then 'Faculty/Staff'
-    when dp.primaryaffiliation = 'Affiliate'
-      and daf.edupersonaffiliation = 'Affiliate'
-      and daf.description = 'Student Employee' then 'Student'
-    when dp.primaryaffiliation = 'Affiliate'
-      and daf.edupersonaffiliation = 'Affiliate'
-      and daf.description = 'Continuing Ed Non-Credit Student' then 'Student'
-    when dp.primaryaffiliation = 'Member'
-      and daf.edupersonaffiliation = 'Member'
-      and daf.description = 'Faculty' then 'Faculty/Staff'
-    else 'Student'
-  end as person_type
-from dirsvcs.dir_person dp 
-  inner join dirsvcs.dir_affiliation daf
-    on daf.uuid = dp.uuid
-    and daf.campus = 'Boulder Campus' 
-    and dp.primaryaffiliation not in ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
-    and daf.description not in ('Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3')
-    and daf.description not like 'POI_%'
-  left join dirsvcs.dir_email de
-    on de.uuid = dp.uuid
-    and de.mail_flag = 'M'
-    and de.mail is not null
-where (
-    dp.primaryaffiliation != 'Student'
-    and lower(de.mail) not like '%cu.edu'
-  ) or (
+SELECT DISTINCT 
+    dp.dir_uid AS username,
+    de.mail AS email,
+    CASE 
+        WHEN dp.primaryaffiliation = 'Student' THEN 'Student'  
+        WHEN dp.primaryaffiliation = 'Faculty' THEN 
+            CASE
+                WHEN daf.edupersonaffiliation = 'Faculty' 
+                    AND daf.description = 'Student Faculty' THEN 'Student'
+                ELSE 'Faculty/Staff' 
+        END
+        WHEN dp.primaryaffiliation = 'Staff' THEN 'Faculty/Staff' 
+        WHEN dp.primaryaffiliation = 'Employee' THEN
+            CASE
+                WHEN daf.edupersonaffiliation = 'Employee' 
+                    AND daf.description = 'Student Employee' THEN 'Student' 
+                WHEN daf.edupersonaffiliation = 'Employee' 
+                    AND daf.description = 'Student Faculty' THEN 'Student'
+                ELSE 'Faculty/Staff'
+            END
+        WHEN dp.primaryaffiliation = 'Officer/Professional' THEN 'Faculty/Staff'
+        WHEN dp.primaryaffiliation = 'Affiliate'
+            AND daf.edupersonaffiliation = 'Affiliate'
+            AND daf.description = 'Student Employee' THEN 'Student'
+        WHEN dp.primaryaffiliation = 'Affiliate'
+            AND daf.edupersonaffiliation = 'Affiliate'
+            AND daf.description = 'Continuing Ed Non-Credit Student' THEN 'Student'
+        WHEN dp.primaryaffiliation = 'Member'
+            AND daf.edupersonaffiliation = 'Member'
+            AND daf.description = 'Faculty' THEN 'Faculty/Staff'
+        ELSE 'Student'
+    END AS person_type
+FROM dirsvcs.dir_person dp 
+    INNER JOIN dirsvcs.dir_affiliation daf
+    ON daf.uuid = dp.uuid
+        AND daf.campus = 'Boulder Campus' 
+        AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
+        AND daf.description NOT IN (
+            'Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 
+            'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3'
+        )
+        AND daf.description NOT LIKE 'POI_%'
+    LEFT JOIN dirsvcs.dir_email de
+    ON de.uuid = dp.uuid
+        AND de.mail_flag = 'M'
+        AND de.mail IS NOT NULL
+WHERE (
+    dp.primaryaffiliation != 'Student' -- <> acceptable required instead of != for Microsoft SQL Server
+        AND LOWER(de.mail) not like '%cu.edu'
+    ) OR (
     dp.primaryaffiliation = 'Student'
-    and exists (
-      select 'x' from dirsvcs.dir_acad_career where uuid = dp.uuid
+        AND EXISTS (
+            SELECT 'x' FROM dirsvcs.dir_acad_career WHERE uuid = dp.uuid
+        )
     )
-  )
-  and de.mail is not NULL
-  and lower(de.mail) not like '%cu.edu'
+    AND de.mail IS NOT NULL
+    AND LOWER(de.mail) NOT LIKE '%cu.edu';
 
 /*This SQL script selects a username and email and creates a new column 
 to classify people in a database under 'person_type' based on their primary 
