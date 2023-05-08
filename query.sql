@@ -20,11 +20,9 @@ SELECT DISTINCT
                 ELSE 'Faculty/Staff'
             END
         WHEN dp.primaryaffiliation = 'Officer/Professional' THEN 'Faculty/Staff'
-        WHEN dp.primaryaffiliation = 'Affiliate'
-            AND daf.edupersonaffiliation = 'Affiliate'
+        WHEN daf.edupersonaffiliation = 'Affiliate'
             AND daf.description IN ('Student Employee', 'Continuing Ed Non-Credit Student') THEN 'Student'
-        WHEN dp.primaryaffiliation = 'Member'
-            AND daf.edupersonaffiliation = 'Member'
+        WHEN daf.edupersonaffiliation = 'Member'
             AND daf.description = 'Faculty' THEN 'Faculty/Staff'
         ELSE 'Student'
     END AS person_type
@@ -33,12 +31,12 @@ FROM dirsvcs.dir_person dp
         ON daf.uuid = dp.uuid
     LEFT JOIN dirsvcs.dir_email de
         ON de.uuid = dp.uuid
+            AND de.mail IS NOT NULL
+            AND de.mail_flag = 'M'
 WHERE (
     dp.primaryaffiliation != 'Student'
         AND LOWER(de.mail) not like '%cu.edu'
     )
-    AND de.mail IS NOT NULL
-    AND de.mail_flag = 'M'
     AND LOWER(de.mail) NOT LIKE '%cu.edu'
     AND daf.campus = 'Boulder Campus' 
     AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
@@ -46,7 +44,7 @@ WHERE (
         'Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 
         'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3'
     )
-    AND daf.description NOT LIKE 'POI_%' --need to escape '_' if 'POI_' should be matched literally;
+    AND daf.description NOT LIKE 'POI_%'; --need to escape '_' if 'POI_' should be matched literally
 
 /*This SQL script selects a username and email and creates a new column 
 to classify people in a database under 'person_type' based on their primary 
