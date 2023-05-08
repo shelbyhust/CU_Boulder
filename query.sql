@@ -33,13 +33,12 @@ FROM dirsvcs.dir_person dp
         ON daf.uuid = dp.uuid
     LEFT JOIN dirsvcs.dir_email de
         ON de.uuid = dp.uuid
-            AND de.mail_flag = 'M'
-            AND de.mail IS NOT NULL
 WHERE (
     dp.primaryaffiliation != 'Student'
         AND LOWER(de.mail) not like '%cu.edu'
     )
     AND de.mail IS NOT NULL
+    AND de.mail_flag = 'M'
     AND LOWER(de.mail) NOT LIKE '%cu.edu'
     AND daf.campus = 'Boulder Campus' 
     AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
