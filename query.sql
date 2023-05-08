@@ -34,7 +34,7 @@ FROM dirsvcs.dir_person dp
                 'Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 
                 'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3'
             )
-            AND daf.description NOT LIKE 'POI_%'
+            AND daf.description NOT LIKE 'POI_%' --need to escape '_' if 'POI_' should be matched literally
     LEFT JOIN dirsvcs.dir_email de
         ON de.uuid = dp.uuid
             AND de.mail_flag = 'M'
@@ -55,7 +55,7 @@ WHERE (
 to classify people in a database under 'person_type' based on their primary 
 affiliation, taken from the dir_person table, and their education affiliation
 (edupersonaffiliation), taken from the dir_affiliation table. The person_type 
-column is categorized into 'Student', 'Faculty/Staff', or 'Student/Faculty.' 
+column is categorized into 'Student' or 'Faculty/Staff.'
 Certain conditions must be met in order for a user to be selected. For example, 
 former students, retired faculty/staff, or spouses should not be selected. An 
 inner join is performed on the dir_person and edupersonaffiliation tables. In 
