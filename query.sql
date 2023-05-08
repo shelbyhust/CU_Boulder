@@ -3,18 +3,18 @@
 select distinct dp.dir_uid as username
   ,de.mail as email
   ,case  
-    when dp.primaryaffiliation = 'Student' then 'Student'
+    when dp.primaryaffiliation = 'Student' then 'Student'  
     when dp.primaryaffiliation = 'Faculty' then 
-      case when daf.edupersonaffiliation = 'Faculty'
+      case when daf.edupersonaffiliation = 'Faculty' 
         and daf.description = 'Student Faculty' then 'Student'
-      else 'Faculty/Staff'
+      else 'Faculty/Staff' 
       end
-    when dp.primaryaffiliation = 'Staff' then 'Faculty/Staff'
+    when dp.primaryaffiliation = 'Staff' then 'Faculty/Staff' 
     when dp.primaryaffiliation = 'Employee' then 
       case
-        when daf.edupersonaffiliation = 'Employee'
-          and daf.description = 'Student Employee' then 'Student'
-        when daf.edupersonaffiliation = 'Employee'
+        when daf.edupersonaffiliation = 'Employee' 
+          and daf.description = 'Student Employee' then 'Student' 
+        when daf.edupersonaffiliation = 'Employee' 
           and daf.description = 'Student Faculty' then 'Student'
         else 'Faculty/Staff'
       end
@@ -34,20 +34,9 @@ from dirsvcs.dir_person dp
   inner join dirsvcs.dir_affiliation daf
     on daf.uuid = dp.uuid
     and daf.campus = 'Boulder Campus' 
-    and dp.primaryaffiliation != 'Not currently affiliated'
-    and dp.primaryaffiliation != 'Retiree'
-    and dp.primaryaffiliation != 'Affiliate'
-    and dp.primaryaffiliation != 'Member'
-    and daf.description != 'Admitted Student'
-    and daf.description != 'Alum'
-    and daf.description != 'Confirmed Student' 
-    and daf.description != 'Former Student'
-    and daf.description != 'Member Spouse'
-    and daf.description != 'Sponsored'
-    and daf.description != 'Sponsored EFL'
+    and dp.primaryaffiliation not in ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
+    and daf.description not in ('Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3')
     and daf.description not like 'POI_%'
-    and daf.description != 'Retiree'
-    and daf.description != 'Boulder3'
   left join dirsvcs.dir_email de
     on de.uuid = dp.uuid
     and de.mail_flag = 'M'
