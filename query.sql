@@ -33,11 +33,7 @@ FROM dirsvcs.dir_person dp
         ON de.uuid = dp.uuid
             AND de.mail IS NOT NULL
             AND de.mail_flag = 'M'
-WHERE (
-    dp.primaryaffiliation != 'Student'
-        AND LOWER(de.mail) not like '%cu.edu'
-    )
-    AND LOWER(de.mail) NOT LIKE '%cu.edu'
+WHERE LOWER(de.mail) NOT LIKE '%cu.edu'
     AND daf.campus = 'Boulder Campus' 
     AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
     AND daf.description NOT IN (
