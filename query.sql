@@ -31,13 +31,6 @@ SELECT DISTINCT
 FROM dirsvcs.dir_person dp 
     INNER JOIN dirsvcs.dir_affiliation daf
         ON daf.uuid = dp.uuid
-            AND daf.campus = 'Boulder Campus' 
-            AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
-            AND daf.description NOT IN (
-                'Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 
-                'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3'
-            )
-            AND daf.description NOT LIKE 'POI_%' --need to escape '_' if 'POI_' should be matched literally
     LEFT JOIN dirsvcs.dir_email de
         ON de.uuid = dp.uuid
             AND de.mail_flag = 'M'
@@ -47,7 +40,14 @@ WHERE (
         AND LOWER(de.mail) not like '%cu.edu'
     )
     AND de.mail IS NOT NULL
-    AND LOWER(de.mail) NOT LIKE '%cu.edu';
+    AND LOWER(de.mail) NOT LIKE '%cu.edu'
+    AND daf.campus = 'Boulder Campus' 
+    AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
+    AND daf.description NOT IN (
+        'Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 
+        'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3'
+    )
+    AND daf.description NOT LIKE 'POI_%' --need to escape '_' if 'POI_' should be matched literally;
 
 /*This SQL script selects a username and email and creates a new column 
 to classify people in a database under 'person_type' based on their primary 
