@@ -13,18 +13,13 @@ SELECT DISTINCT
         WHEN dp.primaryaffiliation = 'Employee' THEN
             CASE
                 WHEN daf.edupersonaffiliation = 'Employee' 
-                    AND daf.description = 'Student Employee' THEN 'Student' 
-                WHEN daf.edupersonaffiliation = 'Employee' 
-                    AND daf.description = 'Student Faculty' THEN 'Student'
+                    AND daf.description IN ('Student Employee', 'Student Faculty') THEN 'Student' 
                 ELSE 'Faculty/Staff'
             END
         WHEN dp.primaryaffiliation = 'Officer/Professional' THEN 'Faculty/Staff'
         WHEN dp.primaryaffiliation = 'Affiliate'
             AND daf.edupersonaffiliation = 'Affiliate'
-            AND daf.description = 'Student Employee' THEN 'Student'
-        WHEN dp.primaryaffiliation = 'Affiliate'
-            AND daf.edupersonaffiliation = 'Affiliate'
-            AND daf.description = 'Continuing Ed Non-Credit Student' THEN 'Student'
+            AND daf.description IN ('Student Employee', 'Continuing Ed Non-Credit Student') THEN 'Student'
         WHEN dp.primaryaffiliation = 'Member'
             AND daf.edupersonaffiliation = 'Member'
             AND daf.description = 'Faculty' THEN 'Faculty/Staff'
@@ -32,20 +27,20 @@ SELECT DISTINCT
     END AS person_type
 FROM dirsvcs.dir_person dp 
     INNER JOIN dirsvcs.dir_affiliation daf
-    ON daf.uuid = dp.uuid
-        AND daf.campus = 'Boulder Campus' 
-        AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
-        AND daf.description NOT IN (
-            'Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 
-            'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3'
-        )
-        AND daf.description NOT LIKE 'POI_%'
+        ON daf.uuid = dp.uuid
+            AND daf.campus = 'Boulder Campus' 
+            AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
+            AND daf.description NOT IN (
+                'Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 
+                'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3'
+            )
+            AND daf.description NOT LIKE 'POI_%'
     LEFT JOIN dirsvcs.dir_email de
-    ON de.uuid = dp.uuid
-        AND de.mail_flag = 'M'
-        AND de.mail IS NOT NULL
+        ON de.uuid = dp.uuid
+            AND de.mail_flag = 'M'
+            AND de.mail IS NOT NULL
 WHERE (
-    dp.primaryaffiliation != 'Student' -- <> acceptable required instead of != for Microsoft SQL Server
+    dp.primaryaffiliation != 'Student'
         AND LOWER(de.mail) not like '%cu.edu'
     ) OR (
     dp.primaryaffiliation = 'Student'
