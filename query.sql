@@ -6,12 +6,12 @@ SELECT DISTINCT
             AND EXISTS (
                 SELECT 'x' FROM dirsvcs.dir_acad_career WHERE uuid = dp.uuid
             ) THEN 'Student'  
-        WHEN dp.primaryaffiliation = 'Faculty' AND daf.edupersonaffiliation = 'Faculty' 
+        WHEN dp.primaryaffiliation = 'Faculty' AND daf.edupersonaffiliation = 'Faculty' THEN
             CASE WHEN daf.description = 'Student Faculty' THEN 'Student'
                 ELSE 'Faculty/Staff' 
             END
         WHEN dp.primaryaffiliation = 'Staff' THEN 'Faculty/Staff' 
-        WHEN dp.primaryaffiliation = 'Employee' AND daf.edupersonaffiliation = 'Employee' 
+        WHEN dp.primaryaffiliation = 'Employee' AND daf.edupersonaffiliation = 'Employee' THEN
             CASE WHEN daf.description IN ('Student Employee', 'Student Faculty') THEN 'Student' 
                 ELSE 'Faculty/Staff'
             END
@@ -25,18 +25,19 @@ SELECT DISTINCT
 FROM dirsvcs.dir_person dp 
     INNER JOIN dirsvcs.dir_affiliation daf
         ON daf.uuid = dp.uuid
+    	    AND daf.campus = 'Boulder Campus' 
+    	    AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
+    	    AND daf.description NOT IN (
+        	'Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 
+        	'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3'
+    	    )
+    AND daf.description NOT LIKE 'POI_%' --need to escape '_' if 'POI_' should be matched literally
     LEFT JOIN dirsvcs.dir_email de
         ON de.uuid = dp.uuid
             AND de.mail IS NOT NULL
             AND de.mail_flag = 'M'
-WHERE LOWER(de.mail) NOT LIKE '%cu.edu'
-    AND daf.campus = 'Boulder Campus' 
-    AND dp.primaryaffiliation NOT IN ('Not currently affiliated', 'Retiree', 'Affiliate', 'Member')
-    AND daf.description NOT IN (
-        'Admitted Student', 'Alum', 'Confirmed Student', 'Former Student', 'Member Spouse', 
-        'Sponsored', 'Sponsored EFL', 'Retiree', 'Boulder3'
-    )
-    AND daf.description NOT LIKE 'POI_%'; --need to escape '_' if 'POI_' should be matched literally
+            AND LOWER(de.mail) NOT LIKE '%cu.edu';
+
 
 /*This SQL script selects a username, email 'person_type' from three tables. 
 The 'person_type' column is derived using 'CASE' statements based on a user's
